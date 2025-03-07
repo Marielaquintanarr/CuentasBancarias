@@ -8,6 +8,9 @@ import os
 from datetime import datetime
 from abc import ABC, abstractmethod
 import random as rnd
+import calendar
+
+
 class Admin:
     def generar_cvv(self):
         cvv = rnd.randint(100, 999)
@@ -59,8 +62,9 @@ class CuentaBancaria:
             print('Su fecha de corte sera el último dia de cada mes')
         tarjeta_credito = TarjetaCredito(numero, cvv, self.nombre, fecha_de_corte, fecha_de_pago)
         print('Se ha creado tu terjeta con éxito')
-        tarjeta_credito.mostrar_datos()
+
         self.tarjetas.append(tarjeta_credito)
+        return tarjeta_credito
 
     def depositar(self, cuenta, monto):
         path = '/Users/marielaquintanar/Desktop/cursos/Python-Course/ejercicios_finales'
@@ -225,7 +229,7 @@ class TarjetaCredito(Tarjeta):
         self.saldo = 0
         self.propietario = propietario
         self.puntos = 0
-        self.linea_de_credito = 0
+        self.linea_de_credito = 23500
         self.linea_de_credito_usada = 0
         self.fecha_corte = fecha_corte
         self.fecha_pago = fecha_pago
@@ -235,25 +239,67 @@ class TarjetaCredito(Tarjeta):
         print(f'cvv: {self.cvv}')
         print(f'Saldo: {self.saldo}')
         print(f'Numero de tarjeta: {self.numero}')
-        print(f'Fecha: {self.fecha}')
         print(f'cvv: {self.cvv}')
         print(f'Puntos: {self.puntos}')
         print(f'Linea de credito: {self.linea_de_credito}')
         print(f'Fecha corte: {self.fecha_corte}')
         print(f'Fecha de pago: {self.fecha_pago}')
-    
-    
+
+
     def pagar_con_tarjeta(self, monto):
         if monto <= (self.linea_de_credito - self.linea_de_credito_usada):
-            self.linea_de_credito_usada += monto
+            self.linea_de_credito_usada = self.linea_de_credito - monto
+
+            path = '/Users/marielaquintanar/Desktop/cursos/Python-Course/ejercicios_finales'
+            archive = 'Movimientos_de_tarjeta_credito_' + f'{self.numero}.txt'
+            fecha = datetime.today()
+            fecha = fecha.strftime("%d/%m/%Y")
+
+            if archive not in os.listdir(path):
+                with open(f'{path}/{archive}', 'w') as archivo:
+                    archivo.writelines(f'{fecha}' + '\n' + f'Linea total de credito: {self.linea_de_credito}' + '\n' + f'Credito disponible: {self.linea_de_credito_usada}' + '\n' + f'- {monto}' + '\n' + f'Credito disponible despues de usar tarjeta: {self.linea_de_credito_usada}' + '\n')
+                
+            else:
+                with open(f'{path}/{archive}', 'a') as archivo:
+                    archivo.writelines(f'{fecha}' + '\n' + f'Linea de credito: {self.linea_de_credito}' + '\n' + f'Credito disponible: {self.linea_de_credito}' + '\n' + f'- {monto}')
         else:
             print('Se excedio la linea de credito')
 
     def pagar_tarjeta(self, monto):
         if monto <= self.linea_de_credito_usada:
-            self.linea_de_credito_usada = self.linea_de_credito_usada - monto
+            self.linea_de_credito_usada = self.linea_de_credito_usada + monto
+
+            path = '/Users/marielaquintanar/Desktop/cursos/Python-Course/ejercicios_finales'
+            archive = 'Movimientos_de_tarjeta_credito_' + f'{self.numero}.txt'
+            fecha = datetime.today()
+            fecha = fecha.strftime("%d/%m/%Y")
+        
+            if archive not in os.listdir(path):
+                with open(f'{path}/{archive}', 'w') as archivo:
+                    archivo.writelines(f'{fecha}' + '\n' + f'Linea total de credito: {self.linea_de_credito}' + '\n' + f'Credito disponible: {self.linea_de_credito_usada}' + '\n' + f'+ {monto}' + '\n' + f'Credito disponible despues de pago: {self.linea_de_credito_usada}' + '\n')
+                
+            else:
+                with open(f'{path}/{archive}', 'a') as archivo:
+                    archivo.writelines(f'{fecha}' + '\n' + f'Linea total de credito: {self.linea_de_credito}' + '\n' + f'Credito disponible: {self.linea_de_credito_usada}' + '\n' + f'+ {monto}' + '\n' + f'Credito disponible despues de pago: {self.linea_de_credito_usada}' + '\n')
+                
         else:
             print('El monto ingresado excede la linea de credito utilizada')
+    
+    def consultar_fecha_corte(self):
+        if self.fecha_corte == 'b':
+            fecha = datetime.today()
+            ultimo_dia = calendar.monthrange(fecha.year, fecha.month)[1]
+            print(f'El dia de corte es: {ultimo_dia}/{fecha.month}/{fecha.year}')
+        else:
+            fecha = datetime.today()
+            fecha = fecha.strftime("%d/%m/%Y")
+            fecha = fecha.split('/')
+            mes = fecha[1]
+            año = fecha[-1]
+
+            print(f'El dia de corte es: 22/{mes}/{año}') 
+
+
 
 cuentas_creadas = {}
 admin = Admin()
@@ -263,13 +309,9 @@ cuentas_creadas[cuenta1] = cuenta1.nombre
 cuenta2 = CuentaBancaria(admin, 'Jaime')
 cuentas_creadas[cuenta2] = cuenta2.nombre
 
-cuenta1.mostrar_info()
-cuenta2.mostrar_info()
+#cuenta1.mostrar_info()
+credito = cuenta1.crearTarjetaCredito(admin)
+credito.pagar_con_tarjeta(100)
+credito.pagar_tarjeta(100)
 
-debito1 = cuenta1.crearTarjetaDebito(admin)
-# #debito2 = cuenta2.crearTarjetaDebito(admin)
-
-cuenta1.depositar(cuenta1, 500)
-cuenta1.mostrar_info()
-cuenta1.transferir(cuenta1, cuentas_creadas)
 

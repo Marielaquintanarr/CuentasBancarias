@@ -1,0 +1,5 @@
+06/03/2025
+Linea total de credito: 23500
+Credito disponible: 23400
+- 100
+Credito disponible despues de usar tarjeta: 23400
