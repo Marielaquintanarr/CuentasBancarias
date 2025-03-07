@@ -1,0 +1,7 @@
+los datos son: 
+Nombre: Mariela 
+Apellido: quintanar
+Nombre: Sofia 
+Apellido: de la mora
+Nombre: Tamara 
+Apellido: benavides
